@@ -19,13 +19,12 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <stdlib.h> //rand, srand
-#include <string>
 
 using namespace cv;
 using namespace std;
 
 class Dataset {
-	int k=0;
+	int k;
 
 public:
 	Mat* CreateDS() {
@@ -42,7 +41,7 @@ public:
 		if (dp == NULL) {
 			cout << "Error(" << errno << ") opening " << dir << endl;
 		}
-		int k = 0;
+		k = 0;
 		while ((dirp = readdir(dp))) {
 			filepath = dir + "/" + dirp->d_name;
 
@@ -59,10 +58,6 @@ public:
 				ds[k] = Translate(src);
 				++k;
 
-				/*resize(ds[k], image, Size(256, 256));
-				 namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
-				 imshow("Display window", image);    // Show our image inside it.
-				 waitKey(0);*/
 			}
 
 		}
@@ -73,7 +68,7 @@ public:
 
 	Mat* addNoise(Mat ds[], double NoisePercentage) {
 		int pixels_with_noise = (NoisePercentage / 100) * (25 * 25);
-		cout << "Pixels with noise :" << pixels_with_noise << endl;
+		//cout << "Pixels with noise :" << pixels_with_noise << endl;
 		int x, y;
 		Mat *NoisyDS= new Mat[1400];
 
@@ -102,6 +97,7 @@ public:
 				visited[x][y] = true;
 			}
 			NoisyDS[i] = noisyImage;
+
 
 		}
 		return NoisyDS;

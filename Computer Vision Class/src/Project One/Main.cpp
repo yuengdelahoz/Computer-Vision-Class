@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
 	cout << endl;
 	cout << endl;
 
+	double accuracy =0;
 	for (int i = 0; i < 14; i++) {
 		for (int j = 0; j < 14; j++) {
 			if (cm[i][j] == 0)
@@ -40,10 +41,12 @@ int main(int argc, char** argv) {
 				cout << "0" << cm[i][j] << "-";
 			else
 				cout << cm[i][j] << "-";
-
+			if (i==j) accuracy = accuracy +cm[i][j];
 		}
 		cout << endl;
 	}
+
+	cout << "System's Accuracy: " << (accuracy/1400)*100 << "%" <<endl;
 
 }
 

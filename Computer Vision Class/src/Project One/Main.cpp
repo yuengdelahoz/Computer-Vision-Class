@@ -21,21 +21,29 @@ int main(int argc, char** argv) {
 	noisy_10_ds = db.addNoise(orig_ds, 10);
 	noisy_25_ds = db.addNoise(orig_ds, 25);
 	noisy_50_ds = db.addNoise(orig_ds, 50);
-
-	Features s;
-	s.dsFeatures(orig_ds);
-
 	Mat image;
 
-	/*	for (int i = 0; i < 1400;) {
-	 resize(noisy_50_ds[i], image, Size(256, 256));
-	 namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
-	 imshow("Display window", image);    // Show our image inside it.
-	 waitKey(0);
-	 i = i + 100;
+	Features s;
+	int **cm;
+	cm = s.dsClassify(noisy_50_ds);
+	cout << endl;
+	cout << endl;
 
-	 }*/
+	for (int i = 0; i < 14; i++) {
+		for (int j = 0; j < 14; j++) {
+			if (cm[i][j] == 0)
+				cout << "000-";
 
+			else if (cm[i][j] > 0 && cm[i][j] < 10)
+				cout << "00" << cm[i][j] << "-";
+			else if (cm[i][j] >= 10 &&cm[i][j] <100)
+				cout << "0" << cm[i][j] << "-";
+			else
+				cout << cm[i][j] << "-";
+
+		}
+		cout << endl;
+	}
 
 }
 

@@ -131,15 +131,15 @@ private:
 			}
 		}
 		// Find the maximun vertical and horizontal shift taking into account images original size is 25x25
-		int maxVerticalShift = 25 - (top + 11);
-		int maxHorizontalShift = 25 - (left + 8);
+		int maxVerticalShift = 24 - (top + 11);
+		int maxHorizontalShift = 24 - (left + 8);
 
 		/*cout << " Top " << top << "\n" << "Left " << left << endl;
 		 cout << maxVerticalShift << " - " << maxHorizontalShift << endl;*/
 
 		Mat dst = Mat::ones(height, width, image.type()) * 255;
-		int shiftv = rand() % maxVerticalShift;
-		int shifth = rand() % maxHorizontalShift;
+		int shiftv = rand() % maxVerticalShift+1;
+		int shifth = rand() % maxHorizontalShift+1;
 		for (int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				if (image.at<uchar>(i, j) == 0) {

@@ -30,36 +30,440 @@ public:
 		iterateOverData();
 	}
 
-	void dsFeatures(Mat *ds) {
-		int cnt = 0;
-		double area;
+	int** dsClassify(Mat *ds) {
+		int ** confusionMatrix;
+		confusionMatrix = new int*[14];
+
+		for (int i = 0; i < 14; ++i) {
+			confusionMatrix[i] = new int[14];
+			// each i-th pointer is now pointing to dynamic array (size 10) of actual int values
+		}
+
+		for (int i = 0; i < 14; i++)
+			for (int j = 0; j < 14; j++)
+				confusionMatrix[i][j] = 0;
 		for (int i = 0; i < 1400; i++) {
 			Mat img = ds[i];
 			int size = imageSize(img);
-			int cc = connectedComponents(img);
+			int cc;
+			cc = connectedComponents(img);
+
 			int h = Holes(img);
-			cout << "Image size: " << size << endl;
-			cout << "Connected components: " << cc << endl;
-			cout << "Holes: " << h << endl;
-			area = area + attribute(img);
-			if (cnt = 100) {
-				area = area/100;
-				cout << "Avg. Area: "<<area<< endl;
-				cnt =0;
-				cin.get();
+
+			vector<vector<Point> > contours;
+			vector<Vec4i> hierarchy;
+			Mat img1;
+			bitwise_not(img, img1);
+			resize(img1, img1, Size(512, 512));
+
+			findContours(img1.clone(), contours, hierarchy, CV_RETR_TREE,
+					CV_CHAIN_APPROX_NONE);
+
+			int dsc = i / 100;
+			int mx, my;
+			switch (dsc) {
+			case 0:
+				mx = 0;
+				break;
+			case 1:
+				mx = 1;
+				break;
+			case 2:
+				mx = 2;
+				break;
+			case 3:
+				mx = 3;
+				break;
+			case 4:
+				mx = 4;
+				break;
+			case 5:
+				mx = 5;
+				break;
+			case 6:
+				mx = 6;
+				break;
+			case 7:
+				mx = 7;
+				break;
+			case 8:
+				mx = 8;
+				break;
+			case 9:
+				mx = 9;
+				break;
+			case 10:
+				mx = 10;
+				break;
+			case 11:
+				mx = 11;
+				break;
+			case 12:
+				mx = 12;
+				break;
+			case 13:
+				mx = 13;
+				break;
 			}
-			cnt++;
 
-			/*			if (cc == 1 && h == 0) {
-			 Mat dst = attribute(img);
-			 Mat image;
+			if (cc == 4) {
+				my = 0;
+				confusionMatrix[mx][my]++;
+				continue;
+			} else if (cc == 1) {
+				if (h == 0) {
+					double a = contourArea(contours[0], false);
 
-			 namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
-			 imshow("Display window", dst);
-			 waitKey(0);
-			 }*/
+					double p = arcLength(contours[0], true);
 
+					Mat hull;
+					convexHull(contours[0], hull);
+					double hull_area = contourArea(hull, false);
+					double contour_solidity = a / hull_area;
+
+					double contour_perimeter = p;
+					if (size < 25) {
+						if (contour_perimeter < 900) {
+							my = 2;
+							confusionMatrix[mx][my]++;
+							continue;
+
+						} else {
+							my = 7;
+							confusionMatrix[mx][my]++;
+							continue;
+						}
+					} else {
+						if (contour_solidity > 0.80) {
+							my = 1;
+							confusionMatrix[mx][my]++;
+							continue;
+						} else {
+							if (contour_solidity < 0.65) {
+								my = 5;
+								confusionMatrix[mx][my]++;
+								continue;
+							} else {
+								if (contour_perimeter < 900) {
+									my = 4;
+									confusionMatrix[mx][my]++;
+									continue;
+								} else {
+									my = 3;
+									confusionMatrix[mx][my]++;
+									continue;
+								}
+
+							}
+
+						}
+
+					}
+
+				}
+				if (h == 1) {
+					double hole_area = contourArea(contours[1], false);
+					if (hole_area < 4340) {
+						my = 6;
+						confusionMatrix[mx][my]++;
+						continue;
+
+					} else if (hole_area > 4340) {
+						my = 9;
+						confusionMatrix[mx][my]++;
+						continue;
+					}
+
+				} else if (h == 2) {
+					my = 8;
+					confusionMatrix[mx][my]++;
+					continue;
+
+				}
+			} else {
+				if (size == 24) {
+					my = 13;
+					confusionMatrix[mx][my]++;
+					continue;
+				} else if (size == 26) {
+					my = 12;
+					confusionMatrix[mx][my]++;
+					continue;
+				} else {
+
+					vector<vector<Point> > contours;
+					vector<Vec4i> hierarchy;
+					Mat img1;
+					bitwise_not(img, img1);
+
+					findContours(img1.clone(), contours, hierarchy,
+							CV_RETR_TREE, CV_CHAIN_APPROX_NONE);
+
+					RNG rng(12345);
+					Mat drawing = Mat::zeros(img1.size(), CV_8UC3);
+					vector<RotatedRect> minRect(contours.size());
+
+					for (int i = 0; i < contours.size(); i++) {
+
+						minRect[i] = minAreaRect(contours[i]);
+
+					}
+					if (minRect[0].angle < 0) {
+						my = 10;
+						confusionMatrix[mx][my]++;
+						continue;
+					} else {
+						my = 11;
+						confusionMatrix[mx][my]++;
+						continue;
+					}
+
+				}
+			}
 		}
+		return confusionMatrix;
+
+		/*else {
+
+		 int ** confusionMatrix;
+		 confusionMatrix = new int*[14];
+		 for (int i = 0; i < 14; ++i) {
+		 confusionMatrix[i] = new int[14];
+		 // each i-th pointer is now pointing to dynamic array (size 10) of actual int values
+		 }
+
+		 for (int i = 0; i < 14; i++) {
+		 for (int j = 0; j < 14; j++) {
+		 confusionMatrix[i][j] = 0;
+		 }
+
+		 }
+
+		 for (int i = 0; i < 1400; i++) {
+		 Mat img = ds[i];
+		 int size = imageSize(img);
+		 int cc;
+		 cc = connectedComponents(img);
+		 int h = Holes(img);
+		 double *att;
+		 att = attribute(img);
+
+		 int dsc = i / 100;
+		 int mx, my;
+		 switch (dsc) {
+		 case 0:
+		 mx = 0;
+		 break;
+		 case 1:
+		 mx = 1;
+		 break;
+		 case 2:
+		 mx = 2;
+		 break;
+		 case 3:
+		 mx = 3;
+		 break;
+		 case 4:
+		 mx = 4;
+		 break;
+		 case 5:
+		 mx = 5;
+		 break;
+		 case 6:
+		 mx = 6;
+		 break;
+		 case 7:
+		 mx = 7;
+		 break;
+		 case 8:
+		 mx = 8;
+		 break;
+		 case 9:
+		 mx = 9;
+		 break;
+		 case 10:
+		 mx = 10;
+		 break;
+		 case 11:
+		 mx = 11;
+		 break;
+		 case 12:
+		 mx = 12;
+		 break;
+		 case 13:
+		 mx = 13;
+		 break;
+		 }
+		 double contour_solidity = att[9];
+		 if (cc == 4) {
+		 my = 0;
+		 confusionMatrix[mx][my]++;
+		 } else if (cc == 1) {
+		 if (h == 0) {
+
+		 double contour_perimeter = att[3];
+		 if (size < 25) {
+		 if (contour_perimeter < 900) {
+		 my = 2;
+		 confusionMatrix[mx][my]++;
+		 continue;
+
+		 } else {
+		 my = 7;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 }
+		 } else {
+		 if (contour_solidity > 0.80) {
+		 my = 1;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 } else {
+		 if (contour_solidity < 0.65) {
+		 my = 5;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 } else {
+		 if (contour_perimeter < 900) {
+		 my = 4;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 } else {
+		 my = 3;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 }
+
+		 }
+
+		 }
+
+		 }
+		 }
+		 if (h == 1) {
+		 int hole_area = att[1];
+		 if (hole_area < 4340) {
+		 my = 6;
+		 confusionMatrix[mx][my]++;
+		 continue;
+
+		 } else if (hole_area > 4340) {
+		 my = 9;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 }
+
+		 } else if (h == 2) {
+		 my = 8;
+		 confusionMatrix[mx][my]++;
+		 continue;
+
+		 } else if (h == 3) {
+
+		 }
+		 } else {
+		 if (size == 24) {
+		 my = 13;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 } else if (size == 26) {
+		 my = 12;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 } else {
+		 vector<vector<Point> > contours;
+		 vector<Vec4i> hierarchy;
+		 Mat img1;
+		 bitwise_not(img, img1);
+
+		 findContours(img1.clone(), contours, hierarchy,
+		 CV_RETR_TREE, CV_CHAIN_APPROX_NONE);
+
+		 RNG rng(12345);
+		 Mat drawing = Mat::zeros(img1.size(), CV_8UC3);
+		 vector<RotatedRect> minRect(contours.size());
+
+		 for (int i = 0; i < contours.size(); i++) {
+
+		 minRect[i] = minAreaRect(contours[i]);
+
+		 }
+		 if (minRect[0].angle < 0) {
+		 my = 10;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 } else {
+		 my = 11;
+		 confusionMatrix[mx][my]++;
+		 continue;
+		 }
+
+		 }
+		 }
+
+
+		 cnt++;
+		 cout << "Counter "<< cnt << endl;
+		 cout << "Image size: " << size << endl;
+		 cout << "Connected components: " << cc << endl;
+		 cout << "Holes: " << h << endl;
+		 cout << "Contour[0] " << "Area: " << att[0] << endl;
+		 cout << "Contour[1] " << "Area: " << att[1] << endl;
+		 cout << "Contour[2] " << "Area: " << att[2] << endl;
+		 cout << "Contour[0] " << "Perimeter: " << att[3]
+		 << endl;
+		 cout << "Contour[1] " << "Perimeter: " << att[4]
+		 << endl;
+		 cout << "Contour[2] " << "Perimeter: " << avg[5]
+		 << endl;
+		 cout << "Contour[0] " << "Radius: " << att[6] << endl;
+		 cout << "Contour[1] " << "Radius: " << att[7] << endl;
+		 cout << "Contour[2] " << "Radius: " << att[8] << endl;
+		 cout << "Contour[0] " << "Solidity: " << att[9] << endl;
+		 cout << "Contour[1] " << "Solidity: " << att[10]
+		 << endl;
+		 cout << "Contour[2] " << "Solidity: " << att[11]
+		 << endl;
+
+
+
+		 Mat image;
+		 resize(img, image, Size(256, 256));
+		 namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
+		 imshow("Display window", image);
+		 waitKey(0);
+
+		 }
+
+
+		 for (int i = 0; i < 12; i++) {
+		 avg[i] = avg[i] + att[i];
+		 }
+
+		 cout << "Image size: " << size << endl;
+		 cout << "Connected components: " << cc << endl;
+		 cout << "Holes: " << h << endl;
+		 cout << "Contour[0] " << "Area: " << att[0] << endl;
+		 cout << "Contour[1] " << "Area: " << att[1] << endl;
+		 cout << "Contour[2] " << "Area: " << att[2] << endl;
+		 cout << "Contour[0] " << "Perimeter: " << att[3] << endl;
+		 cout << "Contour[1] " << "Perimeter: " << att[4] << endl;
+		 cout << "Contour[2] " << "Perimeter: " << att[5] << endl;
+		 cout << "Contour[0] " << "Radius: " << att[6] << endl;
+		 cout << "Contour[1] " << "Radius: " << att[7] << endl;
+		 cout << "Contour[2] " << "Radius: " << att[8] << endl;
+		 cout << "Contour[0] " << "Solidity: " << att[9] << endl;
+		 cout << "Contour[1] " << "Solidity: " << att[10] << endl;
+		 cout << "Contour[2] " << "Solidity: " << att[11] << endl;
+		 cin.get();
+		 Mat image;
+		 resize(img, image, Size(256, 256));
+		 namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
+		 imshow("Display window", image);
+		 waitKey(0);
+
+		 return confusionMatrix;
+		 }*/
 
 	}
 
@@ -91,8 +495,7 @@ private:
 			src = imread(filepath, CV_8UC1);
 			//src = imread("src/Project One/data/three.pgm", CV_8UC1);
 			cout << "Image size: " << imageSize(src) << endl;
-			image = attribute(src);
-			//resize(src, image, Size(256, 256));
+			resize(src, image, Size(256, 256));
 			namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
 			imshow("Display window", image);
 			waitKey(0);
@@ -225,8 +628,8 @@ private:
 					}
 					if (componentSize >= 5) {
 						connectComponents++;
-						cout << "Component Size ***************** "
-								<< componentSize << endl;
+						/*cout << "Component Size ***************** "
+						 << componentSize << endl;*/
 					}
 
 				}
@@ -235,7 +638,8 @@ private:
 		return connectComponents;
 	}
 
-	int Holes(Mat img) {
+	int Holes(Mat ig) {
+		Mat img = ig.clone();
 		Mat src;
 		int holesCount = 0;
 		// findcontours takes image with background black
@@ -277,55 +681,51 @@ private:
 
 	}
 
-	double attribute(Mat img) {
+	double* attribute(Mat ig) {
+		Mat img = ig.clone();
 		Mat src;
 		// findcontours takes image with background black
 		bitwise_not(img, src);
-		resize(src, src, Size(512, 512));
+		Mat imgbig;
+		resize(src, imgbig, Size(512, 512));
+		double *attributes = new double[12];
+		int kx = 0;
+
+		for (int i = 0; i < 12; i++)
+			attributes[i] = 0;
 
 		vector<vector<Point> > contours;
 		vector<Vec4i> hierarchy;
-		double area = 0;
 
-		Mat singleLevelHoles = Mat::zeros(src.size(), src.type());
-
-		findContours(src.clone(), contours, hierarchy, CV_RETR_LIST,
+		findContours(imgbig.clone(), contours, hierarchy, CV_RETR_TREE,
 				CV_CHAIN_APPROX_NONE);
-		for (vector<Vec4i>::size_type idx = 0; idx < hierarchy.size(); ++idx) {
-			drawContours(singleLevelHoles, contours, idx, Scalar::all(255),
-			CV_FILLED, 8, hierarchy);
-		}
-		RNG rng(12345);
 
-		Mat drawing = Mat::zeros(src.size(), CV_8UC3);
 		for (int i = 0; i < contours.size(); i++) {
-			area = area + contourArea(contours[i], false);
+			double a = contourArea(contours[i], false);
+			kx = i;
+			attributes[kx] = a;
 
 			double p = arcLength(contours[i], true);
-			Point2f center;
-			float radius;
+			kx = kx + 3;
+			attributes[kx] = p;
 
-			minEnclosingCircle(contours[i], center, radius);
+			Point2f center;
+			float r;
+			minEnclosingCircle(contours[i], center, r);
+			kx = kx + 3;
+			attributes[kx] = r;
 
 			Mat hull;
 			convexHull(contours[i], hull);
 			double hull_area = contourArea(hull, false);
-			double solidity = area / hull_area;
+			double s = a / hull_area;
+			kx = kx + 3;
+			attributes[kx] = s;
 
-			/*	cout << "Contour[" << i << "] " << "Area: " << a << endl;
-			 cout << "Contour[" << i << "] " << "Perimeter: " << p << endl;
-			 cout << "Contour[" << i << "] " << "Minimum Enclosing radius: "
-			 << radius << endl;
-			 cout << "Contour[" << i << "] " << "Solidity: " << solidity << endl;*/
-
-			Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255),
-					rng.uniform(0, 255));
-			drawContours(drawing, contours, i, color, 2, 8, hierarchy, 0,
-					Point());
 		}
-		//cout << "Contours: " << contours.size() << endl;
+		//cout << "Area: " << area << endl;
 
-		return area;
+		return attributes;
 	}
 
 	Pixel*** addImagetoStack(Mat img) {
@@ -370,5 +770,33 @@ private:
 			cout << endl;
 		}
 	}
-};
+}
+;
+/*
+ for (int i = 0; i < 12; i++) {
+ avg[i] = avg[i] + att[i];
+ }
+
+ cout << "Image size: " << size << endl;
+ cout << "Connected components: " << cc << endl;
+ cout << "Holes: " << h << endl;
+ cout << "Contour[0] " << "Area: " << att[0] << endl;
+ cout << "Contour[1] " << "Area: " << att[1] << endl;
+ cout << "Contour[2] " << "Area: " << att[2] << endl;
+ cout << "Contour[0] " << "Perimeter: " << att[3] << endl;
+ cout << "Contour[1] " << "Perimeter: " << att[4] << endl;
+ cout << "Contour[2] " << "Perimeter: " << att[5] << endl;
+ cout << "Contour[0] " << "Radius: " << att[6] << endl;
+ cout << "Contour[1] " << "Radius: " << att[7] << endl;
+ cout << "Contour[2] " << "Radius: " << att[8] << endl;
+ cout << "Contour[0] " << "Solidity: " << att[9] << endl;
+ cout << "Contour[1] " << "Solidity: " << att[10] << endl;
+ cout << "Contour[2] " << "Solidity: " << att[11] << endl;
+ cin.get();
+ Mat image;
+ resize(img, image, Size(256, 256));
+ namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
+ imshow("Display window", image);
+ waitKey(0);
+ */
 

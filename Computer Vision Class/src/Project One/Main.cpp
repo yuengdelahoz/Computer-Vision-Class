@@ -9,7 +9,7 @@
 using namespace cv;
 using namespace std;
 
-int main(int argc, char** argv) {
+/*int main(int argc, char** argv) {
 	Mat * orig_ds;
 	Mat * noisy_5_ds;
 	Mat * noisy_10_ds;
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
 	Features s;
 	int **cm;
-	cm = s.dsClassify(noisy_50_ds);
+	cm = s.dsClassify(noisy_25_ds);
 	cout << endl;
 	cout << endl;
 
@@ -48,5 +48,5 @@ int main(int argc, char** argv) {
 
 	cout << "System's Accuracy: " << (accuracy/1400)*100 << "%" <<endl;
 
-}
+}*/
 
